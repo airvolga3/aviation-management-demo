@@ -1,0 +1,69 @@
+/* Economic drill-down: same glass console, with a visible data coordinate. */
+.drill-glass .breadcrumbs { gap: 7px; margin-bottom: 22px; }
+.drill-glass .breadcrumbs [aria-current] { color: var(--ink); }
+.drill-glass .page-heading h1 { font-family: var(--font-ui); font-size: clamp(1.5rem,2.3vw,2rem); font-weight: 550; }
+.result-context { margin: 0 0 24px; position: sticky; top: 12px; z-index: 5; border-radius: 18px; backdrop-filter: blur(20px); }
+.result-context ol { display: flex; flex-wrap: wrap; gap: 12px; padding: 0; margin: 0; list-style: none; }
+.result-context li { flex: 1 1 225px; min-width: 0; }
+.result-context a { display: grid; grid-template-columns: 26px minmax(0,1fr); gap: 8px 12px; height: 100%; padding: 16px 18px; border: 1px solid var(--glass-edge); border-radius: 18px; background: var(--glass); color: var(--ink); box-shadow: var(--glass-shadow); }
+.result-context a[aria-current] { background: var(--glass-strong); box-shadow: var(--glass-shadow),inset 0 -3px 0 var(--blue); }
+.result-context a:hover { outline: 1px solid var(--blue); }
+.context-level { display: grid; align-content: start; justify-items: center; gap: 4px; font-size: .75rem; color: var(--muted); padding-top: 3px; }
+.context-level svg { width: 14px; height: 14px; }
+.context-copy { display: grid; gap: 5px; }
+.context-copy > span { font-size: .875rem; font-weight: 550; overflow-wrap: anywhere; }
+.context-copy small { font-size: .8125rem; color: var(--muted); }
+.result-context strong { grid-column: 2; display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; font-size: 1.8rem; font-weight: 500; letter-spacing: -.035em; font-variant-numeric: tabular-nums; }
+.result-context strong small { font-size: .8125rem; color: var(--muted); letter-spacing: 0; }
+.drill-glass .panel,.drill-glass .source-details,.drill-glass .document,.drill-glass .driver-card,.drill-glass .evidence-row,.drill-trend { background: var(--glass); border: 1px solid var(--glass-edge); box-shadow: var(--glass-shadow); border-radius: 22px; }
+.drill-glass .detail-total { display: none; } /* Selected value is already in ResultContext. */
+.drill-glass .detail-total strong { font-family: var(--font-ui); font-size: 2.5rem; }
+.drill-glass .detail-total > span { font-size: .875rem; }
+.drill-glass .comparison-strip { border: 0; border-radius: 0; background: transparent; overflow: visible; gap: 12px; }
+.drill-glass .comparison-strip a { border: 1px solid var(--glass-edge); border-radius: 16px; background: var(--glass); box-shadow: var(--glass-shadow); padding: 14px 16px; }
+.drill-glass .comparison-strip a.selected { background: var(--blue-soft); box-shadow: var(--glass-shadow),inset 0 -3px var(--blue); }
+.drill-glass .comparison-strip a:hover { border-color: var(--blue); }
+.drill-glass .comparison-strip small { font-size: .875rem; }
+.drill-trend { padding: 16px 20px; margin-bottom: 24px; }
+.drill-trend > summary { color: var(--blue); cursor: pointer; font-size: .875rem; }
+.drill-trend > summary svg { display: inline-block; vertical-align: middle; margin: 0 8px; }
+.drill-trend[open] > summary { margin-bottom: 24px; }
+.drill-glass .data-table { background: transparent; border: 0; border-radius: 0; overflow: visible; display: grid; gap: 9px; }
+.drill-glass .table-head { background: transparent; padding-top: 0; padding-bottom: 2px; }
+.drill-glass .table-row { background: var(--glass); border: 1px solid var(--glass-edge); border-radius: 16px; box-shadow: 4px 6px 14px #25485412,inset 0 1px 0 var(--glass-edge); }
+.drill-glass .table-row:hover,.drill-glass .evidence-row:hover { background: var(--glass-strong); border-color: var(--blue); }
+.drill-glass .bridge-endpoints,.drill-glass .equation { background: var(--glass-strong); border: 1px solid var(--glass-edge); border-radius: 18px; box-shadow: var(--instrument-inset); padding: 20px; }
+.drill-glass .driver-card { padding: 22px; gap: 14px; border-top: 3px solid var(--blue); }
+.drill-glass .driver-card:hover { border-color: var(--blue); }
+.drill-glass .driver-card strong { font-size: 2rem; letter-spacing: -.04em; }
+.drill-glass .driver-card strong small { letter-spacing: 0; }
+.drill-glass .document { max-width: none; }
+.drill-glass .document-top { letter-spacing: .04em; }
+.drill-glass .document-type { font-family: var(--font-ui); }
+.drill-glass .document-amounts > span { background: var(--glass-strong); box-shadow: var(--instrument-inset); border: 1px solid var(--glass-edge); border-radius: 15px; }
+.drill-glass .notice { background: var(--glass-strong); border-radius: 18px; }
+.drill-glass .source-details summary { font-size: .875rem; }
+.drill-glass .month-contributors { background: var(--glass); }
+@media (max-width: 1050px) {
+  .drill-glass .driver-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .drill-glass .comparison-strip { grid-template-columns: repeat(3,minmax(0,1fr)); }
+  .drill-glass .table-head,.drill-glass .table-row { grid-template-columns: minmax(170px,1.5fr) minmax(100px,.7fr) minmax(140px,1fr) 18px; gap: 14px; }
+}
+@media (max-width: 680px) {
+  .result-context { position: static; }
+  .result-context li { flex-basis: 100%; }
+  .result-context a { grid-template-columns: 24px minmax(0,1fr) auto; padding: 12px; }
+  .result-context strong { grid-column: 3; align-self: center; display: grid; gap: 0; text-align: right; font-size: 1.5rem; }
+  .context-copy small { font-size: .75rem; }
+  .drill-glass .comparison-strip { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .drill-glass .driver-grid,.drill-glass .answer-grid { grid-template-columns: 1fr; }
+  .drill-glass .table-head { display: none; }
+  .drill-glass .table-row { grid-template-columns: minmax(0,1fr) auto 18px; padding: 16px; }
+  .drill-glass .table-row > span:nth-child(3) { grid-row: 2; grid-column: 1/-1; }
+  .drill-glass .table-row > svg { grid-column: 3; grid-row: 1; }
+  .drill-glass .evidence-row { grid-template-columns: 22px minmax(0,1fr) 18px; gap: 12px; padding: 18px; }
+  .drill-glass .evidence-row > strong { grid-column: 2; }
+  .drill-glass .evidence-row > svg:last-child { grid-column: 3; grid-row: 1; }
+  .drill-glass .document-amounts,.drill-glass .meta-grid,.drill-glass .document-lines > div { grid-template-columns: 1fr; }
+}
+@media print { .result-context a,.drill-glass .panel,.drill-glass .document,.drill-glass .driver-card,.drill-glass .evidence-row { box-shadow: none; background: white; } }
