@@ -143,11 +143,11 @@ export default function Al1FinanceWorkspace({
       ...patch,
     });
   const go = (patch: Partial<OwnerRoute>) => {
-    window.location.hash = href(key, {
+    window.location.assign(href(key, {
       row: route.row,
       category: route.category,
       ...patch,
-    });
+    }));
   };
   const invalid =
     !econMonths.includes(start) ||
@@ -800,17 +800,18 @@ export default function Al1FinanceWorkspace({
                       strokeWidth={3}
                       dot={{ r: 3 }}
                       activeDot={{
-                        onClick: (_e: any, p: any) => {
+                        onClick: (_e: unknown, p: unknown) => {
+                          const date = p && typeof p === 'object' && 'payload' in p && p.payload && typeof p.payload === 'object' && 'date' in p.payload ? p.payload.date : undefined;
                           const w = weeks.find(
-                            (x) => x.date === p.payload.date,
+                            (x) => x.date === date,
                           );
                           if (w)
-                            window.location.hash = href('calendar', {
+                            window.location.assign(href('calendar', {
                               id: w.id,
                               field: 'forecast',
                               start: '2026-09',
                               end: '2026-11',
-                            });
+                            }));
                         },
                       }}
                     />

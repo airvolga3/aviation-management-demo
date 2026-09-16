@@ -1,4 +1,5 @@
 'use client';
+import { normalizeEconomicsRoute } from '@/lib/drilldown-contract';
 import { presentationText } from '@/lib/presentation-copy';
 import { useMemo, useState, type ReactNode } from 'react';
 import { ArrowLeft, ChevronRight, ArrowUpRight } from 'lucide-react';
@@ -17,7 +18,6 @@ import {
 } from 'recharts';
 import type { ExecutiveSnapshot } from '@/lib/executive-model';
 import { ownerHref, type OwnerRoute } from '@/lib/owner-model';
-import type { CommercialView } from '@/lib/al1-commercial-model';
 import { MetricHelp } from './metric-help';
 import {
   buildAl1Economics,
@@ -26,7 +26,6 @@ import {
   econDirect,
   econExpenses,
   econFlex,
-  econLine,
   econMetrics,
   econMonths,
   econPnl,
@@ -34,6 +33,8 @@ import {
   econRows,
   econUnit,
   econValue,
+  econSelectedValue,
+  type EconView,
 } from '@/lib/al1-economics-model';
 const fmt = (n: number | null | undefined, d = 2) =>
   n == null
@@ -86,11 +87,12 @@ function Table({ heads, rows }: { heads: string[]; rows: ReactNode[][] }) {
 }
 export default function Al1EconomicsWorkspace({
   data,
-  route,
+  route: incomingRoute,
 }: {
   data: ExecutiveSnapshot;
   route: OwnerRoute;
 }) {
+  const route = normalizeEconomicsRoute(incomingRoute);
   const [page, setPage] = useState(0),
     [search, setSearch] = useState('');
   const c = data.commercial;
@@ -99,12 +101,9 @@ export default function Al1EconomicsWorkspace({
     end = route.end || '2026-12',
     key = canonicalEconMetric(route.kpi || 'overview');
   const scope = { start, end, fleet: route.fleet, aircraft: route.aircraft };
-  const view: CommercialView =
-    route.field === 'actual'
-      ? 'actual'
-      : route.field === 'plan'
-        ? 'plan'
-        : 'forecast';
+  const view: EconView = route.field ?? 'forecast';
+  const unit = (k: string, delta = false) => k === 'margin' ? (delta ? 'п. п.' : '%') : 'млн ₽';
+  const viewLabel = {forecast:'Факт + прогноз периода',actual:'Факт закрытой части',plan:'План периода',ytdPlan:'План закрытой части',variance:'Отклонение прогноза от плана'}[view];
   const link = (k: string, patch: Partial<OwnerRoute> = {}) =>
     ownerHref({
       page: 'company',
@@ -124,7 +123,7 @@ export default function Al1EconomicsWorkspace({
       ...patch,
     });
   const go = (k: string, patch: Partial<OwnerRoute> = {}) => {
-    window.location.hash = link(k, patch);
+    window.location.assign(link(k, patch));
   };
   if (!c || !e || c.snapshotId !== data.snapshotId)
     return (
@@ -192,8 +191,8 @@ export default function Al1EconomicsWorkspace({
     .sort()
     .at(-1);
   const closedScope = { ...activeScope, end: closedEnd || '0000-00' };
-  const value = (k: string, v: CommercialView = view) =>
-    econValue(c, e, activeScope, k, v, selectedFlight?.flightId);
+  const value = (k: string, v: EconView = view) =>
+    econSelectedValue(c, e, activeScope, k, v, selectedFlight?.flightId);
   const planClosed = (k: string) =>
     closed.length
       ? econValue(c, e, closedScope, k, 'plan', selectedFlight?.flightId)
@@ -240,7 +239,7 @@ export default function Al1EconomicsWorkspace({
               border: '1px solid var(--line)',
               borderRadius: 10,
             }}
-            formatter={(v) => fmt(Number(v)) + ' млн ₽'}
+            formatter={(v) => fmt(Number(v)) + ' ' + unit(k)}
           />
           <ReferenceLine y={0} stroke="var(--muted)" />
           <Line
@@ -276,7 +275,7 @@ export default function Al1EconomicsWorkspace({
   );
   const legend = (
     <div className="al1-legend">
-      <span>млн ₽</span>
+      <span>{unit(key)}</span>
       <span>┄ План</span>
       <span>● Факт</span>
       <span>┄ Прогноз будущих месяцев</span>
@@ -418,6 +417,8 @@ export default function Al1EconomicsWorkspace({
           <option value="forecast">Факт + прогноз периода</option>
           <option value="actual">Факт закрытой части</option>
           <option value="plan">План периода</option>
+          <option value="ytdPlan">План закрытой части</option>
+          <option value="variance">Отклонение прогноза от плана</option>
         </select>
       </label>
       <a
@@ -453,14 +454,10 @@ export default function Al1EconomicsWorkspace({
         </span>
         <strong>
           {fmt(value(k))}
-          <small> млн ₽</small>
+          <small> {unit(k, view === 'variance')}</small>
         </strong>
         <p>
-          {view === 'forecast'
-            ? 'Факт + прогноз периода'
-            : view === 'actual'
-              ? 'Факт закрытой части'
-              : 'План периода'}
+          {viewLabel}
         </p>
         <div>
           План периода {fmt(value(k, 'plan'))} · факт {fmt(value(k, 'actual'))}
@@ -468,7 +465,7 @@ export default function Al1EconomicsWorkspace({
         <small>{econMetrics[k].en}</small>
         <div>
           Δ прогноза к плану{' '}
-          {fmt(econDelta(value(k, 'forecast'), value(k, 'plan')).amount)} млн ₽
+          {fmt(econDelta(value(k, 'forecast'), value(k, 'plan')).amount)} {unit(k, true)}
         </div>
       </a>
       <MetricHelp catalog="economics" metric={k} />
@@ -477,6 +474,7 @@ export default function Al1EconomicsWorkspace({
   const activeMetric = econMetrics[key];
   const operatingExpense = !!activeMetric?.expense && !companyOnly.has(key);
   const expenseAnalysis = (k: string) => {
+    if (view === 'variance' || view === 'ytdPlan') return null;
     const A = value(k, 'actual'),
       P = planClosed(k),
       F = econFlex(allRows, k),

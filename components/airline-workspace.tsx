@@ -1,4 +1,5 @@
 'use client';
+import { cashTransactions, cashTotal } from '@/lib/drilldown-contract';
 import { useState, type ReactNode } from 'react';
 import {
   ArrowLeft,
@@ -954,10 +955,8 @@ export default function AirlineWorkspace({
       </section>
     </>
   );
-  function cashTable() {
-    const tx = a.transactions.filter(
-      (t) => t.month >= scope.start && t.month <= scope.end,
-    );
+  function cashTable(kpi = 'fcf', category?: string) {
+    const tx = cashTransactions(a.transactions, scope, kpi, category);
     return (
       <Table
         heads={[
@@ -966,7 +965,7 @@ export default function AirlineWorkspace({
           'Факт закрытых месяцев',
           'Прогноз периода',
         ]}
-        rows={[...new Set(tx.map((t) => t.category))].map((cat) => {
+        rows={[[<strong key="total">Итого денежный поток</strong>, ...(['plan', 'actual', 'forecast'] as const).map(v => n(cashTotal(tx, v)))], ...[...new Set(tx.map((t) => t.category))].map((cat) => {
           const rs = tx.filter((t) => t.category === cat);
           return [
             <a
@@ -981,7 +980,7 @@ export default function AirlineWorkspace({
               : '—',
             n(airSum(rs.map((t) => t.value))),
           ];
-        })}
+        })]}
       />
     );
   }
@@ -1590,24 +1589,13 @@ export default function AirlineWorkspace({
           </>
         );
       if (['ocf', 'capex', 'fcf', 'payments'].includes(kpi)) {
-        const ids = new Set(
-          a.transactions
-            .filter(
-              (t) =>
-                t.month >= scope.start &&
-                t.month <= scope.end &&
-                (!route.row || t.category === route.row) &&
-                (kpi !== 'capex' || t.flow === 'INVESTING') &&
-                (kpi !== 'ocf' || t.flow === 'OPERATING'),
-            )
-            .map((t) => t.id),
-        );
-        return (
-          <>
-            {cashTable()}
-            {recordsTable(a.records.filter((r) => ids.has(r.id)))}
-          </>
-        );
+        const ids = new Set(cashTransactions(a.transactions, scope, kpi, route.row, field).map(t => t.id));
+        return <>
+          {kpi === 'capex' && <p>CAPEX показан как положительная величина инвестиций; денежные выплаты в таблице имеют знак минус. Итог потока = −CAPEX.</p>}
+          {cashTable(kpi, route.row)}
+          <p>Реестр: {field === 'actual' ? 'факт закрытых месяцев' : field === 'plan' ? 'план периода' : 'факт + прогноз периода'}.</p>
+          {recordsTable(a.records.filter(r => ids.has(r.id)))}
+        </>;
       }
       if (kpi === 'portfolio')
         return (

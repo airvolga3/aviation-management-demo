@@ -1,8 +1,9 @@
 'use client';
+import { executiveProfile, projectExecutive } from '@/lib/executive-payload';
+import { economicsMonthRoute } from '@/lib/drilldown-contract';
 import {MetricHelp} from './metric-help';
 import { useEffect, useState } from 'react';
 import {
-  ArrowLeft,
   ArrowRight,
   ChevronRight,
   ShieldAlert,
@@ -60,23 +61,26 @@ const role = (key: string) =>
           : 'Финансовый директор';
 
 export default function ExecutiveWorkspace({ route }: { route: OwnerRoute }) {
-  const [data, setData] = useState<ExecutiveSnapshot | null>(null),
+  const profile = executiveProfile(route);
+  const [loaded, setLoaded] = useState<{profile:string; data:ExecutiveSnapshot} | null>(null),
     [error, setError] = useState(''),
     [retry, setRetry] = useState(0);
+  const data = loaded?.profile === profile ? loaded.data : null;
   useEffect(() => {
     const c = new AbortController();
     setError('');
-    fetch(import.meta.env.BASE_URL + 'data/executive.json', { cache: 'no-store', signal: c.signal })
+    fetch(import.meta.env.BASE_URL + 'data/executive-' + profile + '.json', { cache: 'no-store', signal: c.signal })
       .then(async (r) => {
         const b = (await r.json()) as ExecutiveSnapshot & { message?: string };
         if (!r.ok) throw Error(b.message);
-        setData(b);
+        const selected = projectExecutive(b, profile);
+        if (!c.signal.aborted) setLoaded({profile, data:selected});
       })
       .catch((e) => {
-        if (e.name !== 'AbortError') setError(e.message);
+        if (!c.signal.aborted && e.name !== 'AbortError') { setLoaded(null); setError(e.message); }
       });
     return () => c.abort();
-  }, [retry]);
+  }, [retry, profile]);
   const id = aliases[route.company || ''] || route.company || 'GROUP',
     owner = id === 'GROUP',
     managing = id === 'MANAGEMENT',
@@ -857,7 +861,7 @@ export default function ExecutiveWorkspace({ route }: { route: OwnerRoute }) {
                     <tbody>
                       {e.monthly[k].map((m, i) => (
                         <tr key={m.month}>
-                          <th>{id==='AL1'&&['op','revenue','margin'].includes(key)?<a href={ownerHref({page:'company',company:'AL1',metric:'economics',id:'ECON-'+m.month,snapshot:data.snapshotId})}>{m.label} →</a>:m.label}</th>
+                          <th>{id==='AL1'&&['op','revenue','margin'].includes(key)?<a href={ownerHref(economicsMonthRoute('AL1',data.snapshotId,m.month,key,route.field))}>{m.label} →</a>:m.label}</th>
                           {(['plan', 'actual', 'forecast'] as const).map(
                             (f) => (
                               <td key={f}>

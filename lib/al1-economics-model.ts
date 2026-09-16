@@ -154,6 +154,7 @@ export const econExpenses: Expense[] = [
   },
 ];
 const basic = {
+  margin: ['Операционная маржа', 'Operating margin', 'Операционная прибыль / выручка одного периода и сценария × 100. Проценты объектов не суммируются. Отклонение — в процентных пунктах.'],
   revenue: [
     'Выручка',
     'Revenue',
@@ -374,7 +375,8 @@ export function econDirect(
     opex: C1 + C2 + C3 + C4 + da + other,
   };
   key = canonicalEconMetric(key);
-  return key in vals
+  if (key === 'margin') return R === 0 ? null : 100 * vals.op / R;
+  return Object.hasOwn(vals, key)
     ? vals[key]
     : econExpenses.some((x) => x.id === key)
       ? part((x) => x.id === key)
@@ -508,4 +510,18 @@ export function econUnit(
     ),
   );
   return econRatio(amount, denom, unit === 'FH' ? 1000 : 1e6);
+}
+
+export type EconView = CommercialView | 'ytdPlan' | 'variance';
+export function econSelectedValue(c: Al1Commercial, e: Al1Economics, scope: OpsScope, key: string, field: EconView, flight?: string): number | null {
+  if (field === 'variance') {
+    const plan = econValue(c, e, scope, key, 'plan', flight), forecast = econValue(c, e, scope, key, 'forecast', flight);
+    return plan === null || forecast === null ? null : forecast - plan;
+  }
+  if (field === 'ytdPlan') {
+    const closed = econRows(c, scope, flight).filter(r => r.status !== 'FORECAST');
+    const end = closed.map(r => r.month).sort().at(-1);
+    return end ? econValue(c, e, {...scope, end}, key, 'plan', flight) : null;
+  }
+  return econValue(c, e, scope, key, field, flight);
 }

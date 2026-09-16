@@ -323,7 +323,7 @@ export default function Al1CommercialWorkspace({
       : sections.find((s) => s[0] === kpi)?.[1] || 'Будущий портфель';
   const metricInfo = (key: CommercialMetric) => commercialMetrics[key];
   const go = (key: string, patch: Partial<OwnerRoute> = {}) => {
-    window.location.hash = link(key, patch);
+    window.location.assign(link(key, patch));
   };
   const tally = (key: CommercialMetric) => {
     const m = metricInfo(key);

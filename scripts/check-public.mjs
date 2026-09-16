@@ -4,7 +4,7 @@ import ts from 'typescript';
 const root=new URL('../',import.meta.url),cache=new Map();
 function url(name){if(cache.has(name))return cache.get(name);let code=ts.transpileModule(fs.readFileSync(new URL('lib/'+name+'.ts',root),'utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;code=code.replace(/from ['"]\.\/([^'"]+)['"]/g,(_,dep)=>`from '${url(dep)}'`);const u='data:text/javascript;base64,'+Buffer.from(code).toString('base64');cache.set(name,u);return u;}
 const data=n=>JSON.parse(fs.readFileSync(new URL('public/data/'+n+'.json',root)));
-const d=data('executive'),p=data('production'),o=data('owner');
+const d=JSON.parse(fs.readFileSync(new URL('fixtures/executive.json',root))),p=data('production'),o=data('owner');
 let checks=0;function check(label,fn){fn();checks++;console.log('PASS '+label);}
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-6,`${a} != ${b}`);
 check('Synthetic public sources',()=>{assert.equal(d.classification,'DEMO_SYNTHETIC');assert.equal(p.classification,'DEMO_SYNTHETIC');assert.equal(o.provider.provider,'synthetic');assert.ok(o.context);});

@@ -186,14 +186,6 @@ export default function Al1CeoWorkspace({
     });
   const recLink = (id: string) =>
     link(v.records.find((x) => x.id === id)?.section, id);
-  const prodLink = (fleet?: string, m?: string) =>
-    ownerHref({
-      page: 'production',
-      company: 'AL1',
-      fleet,
-      month: m,
-      snapshot: data.productionSnapshotId,
-    });
   const expense = (f: 'plan' | 'forecast' | 'actual') =>
     e.flows.revenue[f] - e.flows.op[f];
   const margin = (e.flows.op.forecast / e.flows.revenue.forecast) * 100;
@@ -201,12 +193,6 @@ export default function Al1CeoWorkspace({
     crew = sum(v.crews.map((x) => x.available)),
     need = sum(v.crews.map((x) => x.need));
   const minimum = Math.min(e.cash, ...e.weeks.map((w) => w.balance));
-  const revenueTrend = e.monthly.revenue.map((m) => ({
-    label: month(m.month),
-    plan: m.plan,
-    actual: m.actual,
-    forecast: m.forecast,
-  }));
   const opTrend = e.monthly.op.map((m) => ({
     label: month(m.month),
     plan: m.plan,
@@ -283,7 +269,6 @@ export default function Al1CeoWorkspace({
       {sub && <small>{sub}</small>}
     </a><MetricHelp catalog="company" metric={label}/></div>
   );
-  const fleetLabel = (id: string) => (id === 'AL1-IL76' ? 'Ил-76' : 'Ан-124');
   const table = (heads: string[], rows: ReactNode[][]) => (
     <div className="al1-table">
       <table>

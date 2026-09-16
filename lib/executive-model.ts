@@ -95,7 +95,7 @@ export type ExecutiveSnapshot = {
   commercial?: Al1Commercial;
   finance?: Al1Finance;
   safety?: Al1Safety;
-  airlines?: Record<AirlineId, AirlineBundle>;
+  airlines?: Partial<Record<AirlineId, AirlineBundle>>;
   actions: ExecutiveAction[];
 };
 export const round = (v: number) => Math.round(v * 100) / 100;

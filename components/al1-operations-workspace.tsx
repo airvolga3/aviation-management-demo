@@ -98,7 +98,7 @@ export default function Al1OperationsWorkspace({
       ...change,
     });
   const navigate = (change: Partial<OwnerRoute>) => {
-    window.location.hash = url(change);
+    window.location.assign(url(change));
     setPage(0);
     setSearch('');
   };
@@ -270,7 +270,7 @@ export default function Al1OperationsWorkspace({
             <LineChart
               data={points}
               margin={{ left: 3, right: 18, top: 15, bottom: 5 }}
-              onClick={(state: any) => {
+              onClick={(state) => {
                 const m = points[Number(state?.activeTooltipIndex)]?.month;
                 if (m)
                   navigate({ start: m, end: m, id: undefined, kpi: metric });

@@ -558,13 +558,13 @@ export default function RegularFlightWorkspace({
           <Help metric="rcs" />
         </div>
         <div className="rf-flow">
-          {[
+          {([
             ['Подтверждено', v.booked, true, 'booked'],
             ['Принято', v.accepted, stage >= 5, 'rcs'],
             ['Готово · RCS', v.ready, stage >= 5, 'rcs'],
             ['Погружено', v.loaded, stage >= 6, 'rcs'],
             ['Перевезено', v.flown, closed, 'load'],
-          ].map(([label, rows, available, help], i) => (
+          ] as const).map(([label, rows, available, help], i) => (
             <div key={String(label)} className={available ? '' : 'pending'}>
               <small>
                 0{i + 1} <Help metric={String(help)} />

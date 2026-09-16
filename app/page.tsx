@@ -41,7 +41,9 @@ export default function Home() {
     window.addEventListener('hashchange', changed);
     return () => window.removeEventListener('hashchange', changed);
   }, []);
+  const needsOwner = !['overview','companies','company','executive-detail','operating','op-detail'].includes(route.page);
   useEffect(() => {
+    if (!needsOwner) return;
     const controller = new AbortController();
     fetch(import.meta.env.BASE_URL + 'data/owner.json', {cache:'no-store',signal:controller.signal}).then(async r => {
       const body = await r.json() as OwnerWorkspace & { message?: string };
@@ -50,7 +52,7 @@ export default function Home() {
       setData(body);
     }).catch(e => { if (e.name !== 'AbortError') {setData(null);setError(e.message);} });
     return () => controller.abort();
-  }, [reload]);
+  }, [reload, needsOwner]);
   useEffect(() => { titleRef.current?.focus({preventScroll:true}); }, [route]);
 
   const metrics = data?.metrics ?? [];
